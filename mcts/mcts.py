@@ -114,7 +114,7 @@ class MCTS:
         while i < T:
             size = min(batch_size, T - i)
             self.optimizer.zero_grad()
-            loss = torch.Tensor([0])
+            loss = torch.tensor([0], dtype=torch.float32)
             for j in range(i, i + size):
                 idx = idxs[j]
                 Timer.start('gnn')
@@ -122,9 +122,9 @@ class MCTS:
                 Timer.end('gnn')
                 n, _ = graphs[idx].shape
                 # normalize z with mean, std
-                z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
-                loss += mse(z, v[actions[idx]]) - \
-                    (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
+                z = torch.tensor(((T - idx) - means[idx]) / stds[idx], dtype=torch.float32)
+                loss += torch.tensor(mse(z, v[actions[idx]]) - \
+                    (torch.tensor(pis[idx], dtype=torch.float32) * torch.log(p + EPS)).sum(), dtype=torch.float32, requires_grad = True)
             loss /= size
             loss.backward()
             self.optimizer.step()
